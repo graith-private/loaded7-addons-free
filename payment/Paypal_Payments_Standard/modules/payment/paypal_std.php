@@ -146,8 +146,7 @@ class lC_Payment_paypal_std extends lC_Payment {
   * @return integer
   */ 
   public function confirmation() {
-    $this->_order_id = lC_Order::insert();   
-   return false;
+    return false;
   }
 
   /**
@@ -157,8 +156,10 @@ class lC_Payment_paypal_std extends lC_Payment {
   * @return string
   */ 
   public function process_button() {
-    echo $this->_paypal_standard_params();
-    return false;
+    global $order_id;
+    
+    $order_id = lC_Order::insert();
+    return $this->_paypal_standard_params();
   }
 
    /**
@@ -168,7 +169,7 @@ class lC_Payment_paypal_std extends lC_Payment {
   * @return string
   */ 
   private function _paypal_standard_params() {
-    global $lC_Language, $lC_ShoppingCart, $lC_Currencies, $lC_Customer;  
+    global $lC_Language, $lC_ShoppingCart, $lC_Currencies, $lC_Customer, $order_id;  
 
     $upload         = 0;
     $no_shipping    = '1';
@@ -233,10 +234,10 @@ class lC_Payment_paypal_std extends lC_Payment {
         ); 
     }
 
-    $_order_id = (isset($_SESSION['prepOrderID']) && $_SESSION['prepOrderID'] != NULL) ? end(explode('-', $_SESSION['prepOrderID'])) : 0;
+    $order_id = (isset($_SESSION['prepOrderID']) && $_SESSION['prepOrderID'] != NULL) ? end(explode('-', $_SESSION['prepOrderID'])) : 0;
     $return_href_link = lc_href_link(FILENAME_CHECKOUT, 'process', 'SSL', true, true, true);
     $cancel_href_link = lc_href_link(FILENAME_CHECKOUT, 'cart', 'SSL', true, true, true);
-    $notify_href_link = lc_href_link('addons/Paypal_Payments_Standard/ipn.php', 'ipn_order_id=' . $_order_id, 'SSL', true, true, true);
+    $notify_href_link = lc_href_link('addons/Paypal_Payments_Standard/ipn.php', 'ipn_order_id=' . $order_id, 'SSL', true, true, true);
     $signature = $this->setTransactionID($amount);
 
     $paypal_standard_params = array(
@@ -262,11 +263,12 @@ class lC_Payment_paypal_std extends lC_Payment {
         'no_note' => (ADDONS_PAYMENT_PAYPAL_PAYMENTS_STANDARD_NO_NOTE == 'Yes') ? '0': '1',    
         'form' => 'mage');   
   
-    $paypal_standard_action_params =  array_merge($paypal_standard_params,$paypal_action_params); 
+    $paypal_standard_action_params =  array_merge($paypal_standard_params, $paypal_action_params); 
     $paypal_params = '';
     foreach($paypal_standard_action_params as $name => $value) {
       $paypal_params .= lc_draw_hidden_field($name, $value);
     }
+    
     return $paypal_params;    
   }
  /**
@@ -275,8 +277,8 @@ class lC_Payment_paypal_std extends lC_Payment {
   * @access public
   * @return string
   */ 
-  public function process() {    
-    lC_Order::process($this->_order_id, $this->order_status);
+  public function process() {
+    return false;
   }
 
   public function setTransactionID($amount) {
