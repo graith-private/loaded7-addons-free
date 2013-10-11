@@ -36,7 +36,7 @@ try {
     }
     exit(0);
 }
-
+      
 $response_array = array('root' => $_POST);
 $ipn_order_id = $_GET['ipn_order_id'];
 
